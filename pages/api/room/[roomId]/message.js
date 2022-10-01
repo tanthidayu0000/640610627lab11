@@ -7,32 +7,51 @@ import { checkToken } from "../../../../backendLibs/checkToken";
 
 export default function roomIdMessageRoute(req, res) {
   if (req.method === "GET") {
-    //check token
-
-    //get roomId from url
+    const user = checkToken(req);
+    if (!user) {
+      return res.status(401).json({
+        ok: false,
+        message: "You don't permission to access this api",
+      });
+    }
     const roomId = req.query.roomId;
 
     const rooms = readChatRoomsDB();
 
-    //check if roomId exist
-
-    //find room and return
-    //...
+    const roomIdx = rooms.findIndex((x) => x.roomId === roomId);
+    if (roomIdx === -1)
+      return res.status(404).json({ ok: false, message: "Invalid room id" });
+    return res.json({ ok: true, message: rooms[roomIdx].messages });
   } else if (req.method === "POST") {
-    //check token
-
-    //get roomId from url
+    const user = checkToken(req);
+    if (!user) {
+      return res.status(401).json({
+        ok: false,
+        message: "You don't permission to access this api",
+      });
+    }
     const roomId = req.query.roomId;
     const rooms = readChatRoomsDB();
 
-    //check if roomId exist
-
-    //validate body
+    const roomIdx = rooms.findIndex((x) => x.roomId === roomId);
+    if (roomIdx === -1) {
+      return res.status(404).json({ ok: false, message: "Invalid room id" });
+    }
     if (typeof req.body.text !== "string" || req.body.text.length === 0)
       return res.status(400).json({ ok: false, message: "Invalid text input" });
 
-    //create message
+    const newMessage = {
+      messageId: uuidv4(),
+      text: req.body.text,
+      username: user.username,
+    };
+    rooms[roomIdx].messages.push(newMessage);
 
     writeChatRoomsDB(rooms);
+
+    return res.json({
+      ok: true,
+      message: newMessage,
+    });
   }
 }
