@@ -21,7 +21,7 @@ export default function roomIdMessageRoute(req, res) {
     const roomIdx = rooms.findIndex((x) => x.roomId === roomId);
     if (roomIdx === -1)
       return res.status(404).json({ ok: false, message: "Invalid room id" });
-    return res.json({ ok: true, message: rooms[roomIdx].messages });
+    return res.json({ ok: true, messages: rooms[roomIdx].messages });
   } else if (req.method === "POST") {
     const user = checkToken(req);
     if (!user) {
